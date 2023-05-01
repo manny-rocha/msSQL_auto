@@ -54,8 +54,8 @@ class MyHandler(FileSystemEventHandler):
                     print(name)
 
                     # execute SQL query to check if name is in the database
-                    query = f"SELECT COUNT(*) FROM Employees WHERE EmployeeName='{name}'"
-                    c.execute(query)
+                    query = "SELECT COUNT(*) FROM Employees WHERE EmployeeName=?"
+                    c.execute(query, (name,))
                     result = c.fetchone()
 
                     # add the result of the query to the message body
@@ -64,8 +64,8 @@ class MyHandler(FileSystemEventHandler):
                     if result[0] == 0:
                         # name is not in database, add it
                         print(f"{name} not in the database, adding...")
-                        query = f"INSERT INTO Employees (EmployeeName) VALUES ('{name}')"
-                        c.execute(query)
+                        query = "INSERT INTO Employees (EmployeeName) VALUES (?)"
+                        c.execute(query, (name,))
                         print(f"Added {name} to the database")
 
                         # add the result of the query to the message body
@@ -109,10 +109,13 @@ def main():
     try:
         # establish database connection
         conn_str = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={os.environ.get('SERVER')};DATABASE={os.environ.get('DATABASE')};COLLATION=SQL_Latin1_General_CP1_CI_AS;Trusted_Connection=yes;"
+        logger.info(
+            f"Connecting to database using connection string: {conn_str}")
 
         # set up watchdog observer to monitor directory for changes to text files
         path = '.'
-        event_handler = MyHandler(conn_str, email_address=os.environ.get('EMAIL_ADDRESS'))
+        event_handler = MyHandler(
+            conn_str, email_address=os.environ.get('EMAIL_ADDRESS'))
         observer = Observer()
         observer.schedule(event_handler, path, recursive=False)
 
