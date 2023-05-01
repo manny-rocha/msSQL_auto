@@ -94,7 +94,7 @@ class MyHandler(FileSystemEventHandler):
             smtp.starttls()
             smtp.ehlo()
             # replace with your email password
-            smtp.login(self.email_address, 'password')
+            smtp.login(self.email_address, os.environ.get('EMAIL_PASSWORD'))
             smtp.send_message(msg)
             print('Email sent')
 
@@ -107,13 +107,12 @@ class MyHandler(FileSystemEventHandler):
 
 def main():
     try:
-
         # establish database connection
         conn_str = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={os.environ.get('SERVER')};DATABASE={os.environ.get('DATABASE')};COLLATION=SQL_Latin1_General_CP1_CI_AS;Trusted_Connection=yes;"
 
         # set up watchdog observer to monitor directory for changes to text files
         path = '.'
-        event_handler = MyHandler(conn_str, email_address='EMAIL_ADDRESS')
+        event_handler = MyHandler(conn_str, email_address=os.environ.get('EMAIL_ADDRESS'))
         observer = Observer()
         observer.schedule(event_handler, path, recursive=False)
 
