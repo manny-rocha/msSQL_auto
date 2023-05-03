@@ -27,12 +27,12 @@ class MyHandler(FileSystemEventHandler):
     def __init__(self, conn_str, email_address):
         super().__init__()
         self.conn_str = conn_str
-        self.email_address = email_address
+        self.email_address = os.environ.get('EMAIL_ADDRESS')
 
     def on_modified(self, event):
         if event.is_directory:
             return None
-        elif event.event_type == 'modified' and event.src_path.endswith('Vericelusers.txt'):
+        elif event.event_type == 'modified' and event.src_path.endswith(os.environ.get('FILE_NAME')):
             print(f"Detected change in {event.src_path}")
             self.process_file(event.src_path)
 
@@ -54,7 +54,7 @@ class MyHandler(FileSystemEventHandler):
                     print(name)
 
                     # execute SQL query to check if name is in the database
-                    query = "SELECT COUNT(*) FROM Employees WHERE EmployeeName=?"
+                    query = "SELECT COUNT(*) FROM TABLE WHERE EmployeeName=?"
                     c.execute(query, (name,))
                     result = c.fetchone()
 
@@ -64,7 +64,7 @@ class MyHandler(FileSystemEventHandler):
                     if result[0] == 0:
                         # name is not in database, add it
                         print(f"{name} not in the database, adding...")
-                        query = "INSERT INTO Employees (EmployeeName) VALUES (?)"
+                        query = "INSERT INTO TABLE (EmployeeName) VALUES (?)"
                         c.execute(query, (name,))
                         print(f"Added {name} to the database")
 
